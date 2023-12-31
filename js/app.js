@@ -10,6 +10,7 @@ class CalorieTracker {
         this._displayCaloriesConsumed();
         this._displayCaloriesBurned();
         this._displayCaloriesRemaining();
+        this._displayCaloriesProgress();
     }
 
     addMeal(meal) {
@@ -32,11 +33,30 @@ class CalorieTracker {
 
     removeWorkout(){}
 
+    _displayCaloriesProgress() {
+        const progressBar =document.getElementById('calorie-progress');
+        const progress = (this._totalCalories / this._calorieLimit) * 100;
+        const width = Math.min(progress, 100);
+        const remaining = document.getElementById('calories-remaining').parentElement.parentElement;
+
+        if (this._calorieLimit <= this._totalCalories) {
+           progressBar.classList.add('bg-danger');
+           remaining.classList.remove('bg-light'),
+           remaining.classList.add('bg-danger');
+        } else {
+            progressBar.classList.remove('bg-danger');
+            remaining.classList.remove('bg-danger');
+            remaining.classList.add('bg-light');
+        }
+        progressBar.setAttribute('style', `width: ${width}%`);
+    }
+
     _render() {
         this._displayCaloriesTotal();
         this._displayCaloriesConsumed();
         this._displayCaloriesBurned();
         this._displayCaloriesRemaining();
+        this._displayCaloriesProgress();
     }
     resetDay() {
         this._calorieLimit = 2000;
@@ -49,7 +69,9 @@ class CalorieTracker {
         this._calorieLimit = limit;
     }
 
-    loadItems() {}
+    loadItems() {
+        
+    }
 
     _displayCaloriesTotal() {
         const div = document.getElementById('calories-total');
@@ -142,9 +164,9 @@ class Workout {
 
 const tracker = new CalorieTracker();
 
-const breakfast = new Meal('Breakfast', 500);
+const breakfast = new Meal('Breakfast', 2800);
 const dips = new Workout('Dips', 150);
-const burger = new Meal('Burgers', 450);
+const burger = new Meal('Burgers', 550);
 const run = new Workout('Run for 30 min', 200);
 
 tracker.addMeal(breakfast);
