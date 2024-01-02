@@ -5,6 +5,10 @@ class App {
         document.getElementById('workout-form').addEventListener('submit', this._newWorkout.bind(this));
         document.getElementById('meal-items').addEventListener('click', this._removeItem.bind(this, 'meal'));
         document.getElementById('workout-items').addEventListener('click', this._removeItem.bind(this, 'workout'));
+        document.getElementById('filter-meals').addEventListener('keyup', this._filterItems.bind(this, 'meal'));
+        document.getElementById('filter-workouts').addEventListener('keyup', this._filterItems.bind(this, 'workout'));
+        document.getElementById('reset').addEventListener('click', this._reset.bind(this));
+        document.getElementById('limit-form').addEventListener('submit', this._setLimit(this));
     }
 
     _newMeal(event) {
@@ -58,6 +62,35 @@ class App {
 
                 event.target.closest('.card').remove();
             }
+        }
+    }
+
+    _filterItems(type, event) {
+        const text = event.target.value.toLowerCase();
+        document.querySelectorAll(`#${type}-items .card`).forEach((item) => {
+            const name = item.firstElementChild.firstElementChild.textContent;
+
+            if (name.toLowerCase().includes(text)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        })
+    }
+
+    _reset() {
+        this._tracker.resetDay();
+        document.querySelectorAll('#meal-items .card, #workout-items .card').forEach((item) => item.remove());
+    }
+
+    _setLimit(event) {
+        event.preventDefault();
+        const limit = document.getElementById('limit').value;
+
+        if (!isNaN(limit)) {
+            this._tracker.setLimit(limit);
+        } else {
+            alert('Set a number please !');
         }
     }
 }
@@ -139,14 +172,15 @@ class CalorieTracker {
         this._displayCaloriesProgress();
     }
     resetDay() {
-        this._calorieLimit = 2000;
         this._totalCalories = 0;
         this._meals = [];
         this._workouts = []
+        this._render();
     }
 
     setLimit(limit) {
         this._calorieLimit = limit;
+        this._render();
     }
 
     loadItems() {
