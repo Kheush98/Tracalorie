@@ -1,3 +1,67 @@
+class App {
+    constructor() {
+        this._tracker = new CalorieTracker();
+        document.getElementById('meal-form').addEventListener('submit', this._newMeal.bind(this));
+        document.getElementById('workout-form').addEventListener('submit', this._newWorkout.bind(this));
+        document.getElementById('meal-items').addEventListener('click', this._removeItem.bind(this, 'meal'));
+        document.getElementById('workout-items').addEventListener('click', this._removeItem.bind(this, 'workout'));
+    }
+
+    _newMeal(event) {
+        event.preventDefault();
+        const name = document.getElementById('meal-name');
+        const calories = document.getElementById('meal-calories');
+        const meal = new Meal(name.value, +calories.value);
+
+        if (name.value === '' || calories.value === '') {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        this._tracker.addMeal(meal);
+        name.value = '';
+        calories.value = '';
+
+        const collapse = document.getElementById('collapse-meal');
+        const bsCollapse = new bootstrap.Collapse(collapse, {
+            toggle: true,
+        });
+    }
+
+    _newWorkout(event) {
+        event.preventDefault();
+        const name = document.getElementById('workout-name');
+        const calories = document.getElementById('workout-calories');
+        const workout = new Workout(name.value, +calories.value);
+
+        if (name.value === '' || calories.value === '') {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        this._tracker.addWorkout(workout);
+        name.value = '';
+        calories.value = '';
+
+        const collapse = document.getElementById('collapse-workout');
+        const bsCollapse = new bootstrap.Collapse(collapse, {
+            toggle: true,
+        });
+    }
+
+    _removeItem(type, event) {
+        if (event.target.classList.contains('delete') || event.target.classList.contains('fa-xmark')) {
+            if (confirm('Are you sure ?')) {
+                const id = event.target.closest('.card').getAttribute('data-id');
+
+                type === 'meal' ? this._tracker.removeMeal(id) : this._tracker.removeWorkout(id);
+
+                event.target.closest('.card').remove();
+            }
+        }
+    }
+}
+
 class CalorieTracker {
     constructor() {
         this._calorieLimit = 3000;
@@ -20,8 +84,15 @@ class CalorieTracker {
         this._displayNewMeal(meal);
     }
 
-    removeMeal() {
+    removeMeal(id) {
+        const index = this._meals.findIndex((meal) => meal.id === id);
 
+        if (index != -1) {
+            const meal = this._meals[index];
+            this._totalCalories -= meal.calories;
+            this._meals.splice(index, 1);
+            this._render();
+        }
     }
 
     addWorkout(workout) {
@@ -31,7 +102,16 @@ class CalorieTracker {
         this._displayNewWorkout(workout)
     }
 
-    removeWorkout(){}
+    removeWorkout(id){
+        const index = this._workouts.findIndex((workout) => workout.id === id);
+
+        if (index != -1) {
+            const workout = this._workouts[index];
+            this._totalCalories += workout.calories;
+            this._workouts.splice(index, 1);
+            this._render();
+        }
+    }
 
     _displayCaloriesProgress() {
         const progressBar =document.getElementById('calorie-progress');
@@ -105,6 +185,7 @@ class CalorieTracker {
         const div = document.createElement('div');
 
         div.classList.add('card', 'my-2');
+        div.setAttribute('data-id', meal.id);
         div.innerHTML = `<div class="card-body">
         <div class="d-flex align-items-center justify-content-between">
           <h4 class="mx-1">${meal.name}</h4>
@@ -126,6 +207,7 @@ class CalorieTracker {
         const div = document.createElement('div');
 
         div.classList.add('card', 'my-2');
+        div.setAttribute('data-id', workout.id);
         div.innerHTML = `<div class="card-body">
         <div class="d-flex align-items-center justify-content-between">
           <h4 class="mx-1">${workout.name}</h4>
@@ -162,16 +244,4 @@ class Workout {
     }
 }
 
-const tracker = new CalorieTracker();
-
-const breakfast = new Meal('Breakfast', 2800);
-const dips = new Workout('Dips', 150);
-const burger = new Meal('Burgers', 550);
-const run = new Workout('Run for 30 min', 200);
-
-tracker.addMeal(breakfast);
-tracker.addWorkout(dips);
-tracker.addMeal(burger);
-tracker.addWorkout(run);
-
-console.log(tracker)
+const init = new App();
