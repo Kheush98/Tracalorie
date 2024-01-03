@@ -8,7 +8,7 @@ class App {
         document.getElementById('filter-meals').addEventListener('keyup', this._filterItems.bind(this, 'meal'));
         document.getElementById('filter-workouts').addEventListener('keyup', this._filterItems.bind(this, 'workout'));
         document.getElementById('reset').addEventListener('click', this._reset.bind(this));
-        document.getElementById('limit-form').addEventListener('submit', this._setLimit(this));
+        document.getElementById('limit-form').addEventListener('submit', this._setLimit.bind(this));
     }
 
     _newMeal(event) {
@@ -85,13 +85,18 @@ class App {
 
     _setLimit(event) {
         event.preventDefault();
-        const limit = document.getElementById('limit').value;
+        let limit = document.getElementById('limit');
 
-        if (!isNaN(limit)) {
-            this._tracker.setLimit(limit);
+        if (!isNaN(+limit.value) && +limit.value != 0) {
+            this._tracker.setLimit(+limit.value);
+            limit.value = '';
         } else {
             alert('Set a number please !');
         }
+
+        const modalEl = document.getElementById('limit-modal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        modal.hide();
     }
 }
 
@@ -180,6 +185,7 @@ class CalorieTracker {
 
     setLimit(limit) {
         this._calorieLimit = limit;
+        this._displayCaloriesLimit();
         this._render();
     }
 
